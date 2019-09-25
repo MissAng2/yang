@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <script src="vue.js"></script>
+    <link rel="stylesheet" href="bootstrap.css">
+    
+</head>
+<body>
+    <div id="demo" class=" container">
+        <div class="panel panel-primary">
+              <div class="panel-heading">
+                    反馈信息
+              </div>
+              <div class="panel-body">
+                    <form action="" class=" form-inline">
+                        <div class=" form-group">
+                            <label for="">userId:</label>
+                            <input type="text" class=" form-control" v-model="uid">
+                        </div>
+                        <div class=" form-group">
+                            <label for="">content:</label>
+                            <input type="text" class=" form-control" v-model="con" @keyup.enter="add()">
+                        </div>
+                        <button type="button" class="btn btn-primary" @click="add()" >添加</button>
+                        <div class=" form-group">
+                            <label for="">搜索关键字:</label>
+                            <input type="text" class=" form-control" v-model="keys" v-focus="'red'">
+                        </div>
+                    </form>
+              </div>
+        </div>
+        <div>
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <td>userId</td>
+                        <td>content</td>
+                        <td>time</td>
+                        <td>操作</td>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- 开始显示是in mess 查询更改为in findSome() 可自动查询 -->
+                    <tr v-for="(i,index) in findSome()" :key="i.userId">
+                        <td v-cloak>{{i.userId}}</td>
+                        <td v-cloak>{{i.content}}</td>
+                        <td v-cloak>{{i.time | timeChange}}</td>
+                        <td>
+                            <a href="" @click.prevent="shanchu(index)">{{i.done}}</a>
+                            <!-- <a href="" @click.prevent="shanchu(i.userId)">{{i.done}}</a> -->
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>     
+    </div>
+
+    <script>
+        // 改变光标位置
+        Vue.directive("focus",{
+            // 指令刚绑到属性上时执行   编译-->存到浏览器内存
+            bind:function(el,binding){
+                el.style.color=binding.value
+            },
+            // 内存-->页面   转成dom对象渲染到页面
+            inserted:function(el){
+                el.focus();
+            },
+            // 改变后
+            updated:function(){
+
+            }
+        })
+
+        Vue.filter("timeChange",function(data){
+            var year=data.getFullYear();
+            var month=(data.getMonth()+1).toString().padStart(2,"0");
+            var date=data.getDate().toString().padStart(2,"0");
+            var hour=data.getHours().toString().padStart(2,"0");
+            var min=data.getMinutes().toString().padStart(2,"0");
+            var sec=data.getSeconds().toString().padStart(2,"0");
+            var showTime=`${year}年${month}月${date}日  ${hour}时${min}分${sec}秒`;
+            return showTime;
+        })
+        
+        var vm=new Vue({
+            el: "#demo",
+            data: {
+                uid: "",
+                con: "",
+                mess: [
+                    {
+                        userId: "001",
+                        content: "good",
+                        time: new Date(),
+                        done: "del"
+                    },
+                    {
+                        userId: "002",
+                        content: "just soso",
+                        time: new Date(),
+                        done: "del"
+                    }
+                ],
+                arr: [],
+                keys: ""
+            },
+            methods: {
+                add(){
+                    var nowTime=new Date();
+                    for(var i in this.mess){
+                        if(this.arr.indexOf(this.mess[i].userId)==-1){
+                            this.arr.push(this.mess[i].userId);
+                        }
+                    }
+                    if(this.arr.includes(this.uid)){
+                        alert("userId不能重复!");
+                        this.uid="";
+                        this.con="";
+                    }else{
+                        this.arr.push(this.uid);
+                        this.mess.push({userId:this.uid,content:this.con,time:nowTime,done:"del"});
+                        this.uid="";
+                        this.con="";
+                    }
+
+                    // 课上讲解：
+                    // for(let i of this.mess){
+                    //     if(i.userId==this.uid){
+                    //         alert("已参与!!");
+                    //         this.uid="";
+                    //         this.con="";
+                    //         return;
+                    //     }
+                    // }
+                    // this.mess.unshift({userId:this.uid,content:this.con,time:nowTime.toLocaleString(),done:"del"});
+                    // this.uid="";
+                    // this.con="";
+                },
+                shanchu(index){
+                    this.mess.splice(index,1);
+                    this.arr.splice(index,1);
+                },
+                // shanchu(userid){
+                //     // 找到userid对应的元素   -->找到索引值  -->根据索引值删除
+                //     let index=this.mess.findIndex(function(){
+                //         if(userid==i.userId){
+                //             return i;
+                //         }
+                //         this.mess.splice(index,1);
+                //     })
+                // }
+                findSome(){
+                    var that=this;
+                    return this.mess.filter((i)=>{
+                        if(i.content.includes(that.keys)){
+                            return i;
+                        }
+                    })
+                }
+            }
+        })
+    </script>
+
+
+</body>
+</html>
